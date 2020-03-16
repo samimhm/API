@@ -7,10 +7,10 @@ var cors = require("cors");
 
 var db = {
   all: {},
-  countries: {}
+  countries: []
 }
 
-var getall = setInterval(async () => {
+let getAll = async () => {
   let response;
   try {
     response = await axios.get("https://www.worldometers.info/coronavirus/");
@@ -38,12 +38,20 @@ var getall = setInterval(async () => {
       result.recovered = count;
     }
   });
-  db.all = result;
-  // db.set("all", result);
-  console.log("Updated The Cases", result);
-}, 60000);
 
-var getcountries = setInterval(async () => {
+
+  if (result) {
+    db.all = result;
+    console.log("Updated The Cases!");
+  } else {
+    console.log("result: ", result)
+    console.log("!!! Cases not updated !!!");
+  }
+
+}
+
+
+let getcountries = async () => {
   let response;
   try {
     response = await axios.get("https://www.worldometers.info/coronavirus/");
@@ -144,23 +152,29 @@ var getcountries = setInterval(async () => {
       );
     }
   }
-
-  // db.set("countries", result);
-  db.countries = result;
-  if (result) {
+  if (result.length > 0) {
+    db.countries = result;
     console.log("Updated The Countries!");
+  } else {
+    console.log("!!! Countries not updated !!!")
   }
-}, 60000);
+
+}
+
+getAll();
+getcountries();
+
+setInterval(getAll, 300000);
+setInterval(getcountries, 300000);
+
 
 app.use(cors());
 
 app.get("/", async function (request, response) {
-  // let a = await db.fetch("all");
   let a = db.all;
   response.send(
     `${a.cases} cases are reported of the COVID-19 Novel Coronavirus strain<br> ${a.deaths} have died from it <br>\n${a.recovered} have recovered from it <br> Get the endpoint /all to get information for all cases <br> get the endpoint /countries for getting the data sorted country wise`
   );
-  console.log(db);
 });
 
 var listener = app.listen(process.env.PORT ? process.env.PORT : 5000, function () {
@@ -168,7 +182,6 @@ var listener = app.listen(process.env.PORT ? process.env.PORT : 5000, function (
 });
 
 app.get("/all/", async function (req, res) {
-  // let all = await db.fetch("all");
   let all = db.all;
   res.send(all);
 });
@@ -177,4 +190,11 @@ app.get("/countries/", async function (req, res) {
   // let countries = await db.fetch("countries");
   let countries = db.countries;
   res.send(countries);
+});
+
+app.get("/romania/", async function (req, res) {
+  // let countries = await db.fetch("countries");
+  let countries = db.countries;
+  let romania = countries.find(info => { return info.country === "Romania" });
+  res.send(romania);
 });
