@@ -4,11 +4,14 @@ var axios = require("axios");
 var cheerio = require("cheerio");
 var cors = require("cors");
 // var db = require("quick.db");
+const requestIp = require('request-ip');
 
 var db = {
   all: {},
   countries: []
 }
+
+let users = {};
 
 let getAll = async () => {
   let response;
@@ -156,7 +159,7 @@ let getcountries = async () => {
     db.countries = result;
     console.log("Updated The Countries!");
   } else {
-    console.log("!!! Countries not updated !!!")
+    console.log("!!! Countries not updated !!!", result)
   }
 
 }
@@ -169,6 +172,13 @@ setInterval(getcountries, 300000);
 
 
 app.use(cors());
+app.use(requestIp.mw());
+
+// app.use(function (req, res, next) {
+//   const ip = req.clientIp;
+//   console.log("ip connected: ", ip);
+//   next();
+// });
 
 app.get("/", async function (request, response) {
   let a = db.all;
@@ -197,4 +207,44 @@ app.get("/romania/", async function (req, res) {
   let countries = db.countries;
   let romania = countries.find(info => { return info.country === "Romania" });
   res.send(romania);
+});
+
+app.get("/full/", async function (req, res) {
+  let all = db.all;
+  let countries = db.countries;
+  let romania = countries.find(info => { return info.country === "Romania" });
+  res.send({
+    all: all,
+    countries: countries,
+    romania: romania
+  });
+});
+
+
+app.get("/hello/", async function (req, res) {
+  const ip = req.clientIp;
+  console.log(ip, ': Hello!');
+
+  if (users[ip]) {
+    users[ip].lastDate = new Date();
+    users[ip].views = users[ip].views + 1;
+  } else {
+    users[ip] = {
+      lastDate: new Date(),
+      views: 1
+    }
+  }
+  res.send('Welcome')
+});
+
+app.get("/visits/", async function (req, res) {
+  res.send(users);
+  console.log('users: ', users);
+
+});
+
+app.get("/goodbye/", async function (req, res) {
+  const ip = req.clientIp;
+  console.log(ip, ': Good Bye!');
+  res.send('See you later!')
 });
