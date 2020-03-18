@@ -210,9 +210,16 @@ app.get("/romania/", async function (req, res) {
 });
 
 app.get("/full/", async function (req, res) {
+  const ip = req.clientIp;
+
+  if (users[ip]) {
+    users[ip].lastConnection = (new Date()).toLocaleString();
+  }
+
   let all = db.all;
   let countries = db.countries;
   let romania = countries.find(info => { return info.country === "Romania" });
+
   res.send({
     all: all,
     countries: countries,
@@ -231,7 +238,8 @@ app.get("/hello/", async function (req, res) {
   } else {
     users[ip] = {
       lastDate: new Date(),
-      views: 1
+      views: 1,
+      lastConnection: (new Date()).toLocaleString()
     }
   }
   res.send('Welcome')
@@ -239,7 +247,7 @@ app.get("/hello/", async function (req, res) {
 
 app.get("/visits/", async function (req, res) {
   res.send(users);
-  console.log('Visits sent !');
+  console.log('Visits sent !', (new Date()).toLocaleString());
 
 });
 
