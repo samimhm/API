@@ -239,7 +239,7 @@ app.get("/hello/", async function (req, res) {
 
 app.get("/visits/", async function (req, res) {
   res.send(users);
-  console.log('users: ', users);
+  console.log('Visits sent !');
 
 });
 
