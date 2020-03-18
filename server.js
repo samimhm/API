@@ -172,11 +172,11 @@ setInterval(getcountries, 300000);
 app.use(cors());
 app.use(requestIp.mw());
 
-app.use(function (req, res, next) {
-  const ip = req.clientIp;
-  console.log("ip connected: ", ip);
-  next();
-});
+// app.use(function (req, res, next) {
+//   const ip = req.clientIp;
+//   console.log("ip connected: ", ip);
+//   next();
+// });
 
 app.get("/", async function (request, response) {
   let a = db.all;
@@ -208,7 +208,7 @@ app.get("/romania/", async function (req, res) {
 });
 
 app.get("/geo/", async function (req, res) {
-  let countries = db.countries;
-  let romania = countries.find(info => { return info.country === "Romania" });
-  res.send(romania);
+  const ip = req.clientIp;
+  console.log("ip connected: ", ip);
+  res.end()
 });
