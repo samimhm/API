@@ -11,6 +11,8 @@ var db = {
   countries: []
 }
 
+let users = {};
+
 let getAll = async () => {
   let response;
   try {
@@ -68,7 +70,7 @@ let getcountries = async () => {
 
   // get HTML and parse death rates
   const html = cheerio.load(response.data);
-  const countriesTable = html("table#main_table_countries");
+  const countriesTable = html("table#main_table_countries_today");
   const countriesTableCells = countriesTable
     .children("tbody")
     .children("tr")
@@ -157,7 +159,7 @@ let getcountries = async () => {
     db.countries = result;
     console.log("Updated The Countries!");
   } else {
-    console.log("!!! Countries not updated !!!")
+    console.log("!!! Countries not updated !!!", result)
   }
 
 }
@@ -207,8 +209,42 @@ app.get("/romania/", async function (req, res) {
   res.send(romania);
 });
 
-app.get("/geo/", async function (req, res) {
+app.get("/full/", async function (req, res) {
+  let all = db.all;
+  let countries = db.countries;
+  let romania = countries.find(info => { return info.country === "Romania" });
+  res.send({
+    all: all,
+    countries: countries,
+    romania: romania
+  });
+});
+
+
+app.get("/hello/", async function (req, res) {
   const ip = req.clientIp;
-  console.log("ip connected: ", ip);
-  res.end()
+  console.log(ip, ': Hello!');
+
+  if (users[ip]) {
+    users[ip].lastDate = new Date();
+    users[ip].views = users[ip].views + 1;
+  } else {
+    users[ip] = {
+      lastDate: new Date(),
+      views: 1
+    }
+  }
+  res.send('Welcome')
+});
+
+app.get("/visits/", async function (req, res) {
+  res.send(users);
+  console.log('users: ', users);
+
+});
+
+app.get("/goodbye/", async function (req, res) {
+  const ip = req.clientIp;
+  console.log(ip, ': Good Bye!');
+  res.send('See you later!')
 });
