@@ -5,6 +5,7 @@ var cheerio = require("cheerio");
 var cors = require("cors");
 // var db = require("quick.db");
 const requestIp = require('request-ip');
+var geoip = require('geoip-lite');
 
 var db = {
   all: {},
@@ -231,22 +232,30 @@ app.get("/hello/", async function (req, res) {
   const ip = req.clientIp;
   console.log(ip, ': Hello!');
 
+
   if (users[ip]) {
-    users[ip].lastDate = new Date();
+    users[ip].lastDate = Date.now();
     users[ip].views = users[ip].views + 1;
   } else {
     users[ip] = {
-      lastDate: new Date(),
+      lastDate: Date.now(),
       views: 1,
       lastConnection: Date.now()
     }
   }
+  let geo;
+
+  if (ip) {
+    geo = geoip.lookup(ip);
+    users[ip].geo = geo;
+  }
+  console.log('geo', geo);
   res.send('Welcome')
 });
 
 app.get("/visits/", async function (req, res) {
   res.send(users);
-  console.log('Visits sent !', (new Date()).toLocaleString());
+  // console.log('Visits sent !', (new Date()).toLocaleString());
 
 });
 
