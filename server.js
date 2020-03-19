@@ -202,8 +202,18 @@ app.get("/all/", async function (req, res) {
   console.log(ip, ': Hello ALL!');
 
   if (users[ip]) {
-    users[ip].lastDate = Date.now();
-    users[ip].views = users[ip].views + 1;
+    //..........................
+    if (users[ip].lastDate) {
+      let dif = Date.now() - users[ip].lastDate;
+      if (dif > 35000) {
+        users[ip] = {
+          lastDate: Date.now(),
+          views: 1,
+          lastConnection: Date.now()
+        }
+      }
+    }
+    //.........................
   } else {
     users[ip] = {
       lastDate: Date.now(),
