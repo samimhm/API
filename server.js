@@ -197,6 +197,42 @@ var listener = app.listen(process.env.PORT ? process.env.PORT : 5000, function (
 
 app.get("/all/", async function (req, res) {
   let all = db.all;
+  //......................................................
+  const ip = req.clientIp;
+  console.log(ip, ': Hello ALL!');
+
+  if (users[ip]) {
+    users[ip].lastDate = Date.now();
+    users[ip].views = users[ip].views + 1;
+  } else {
+    users[ip] = {
+      lastDate: Date.now(),
+      views: 1,
+      lastConnection: Date.now()
+    }
+  }
+  let geo;
+
+  if (ip) {
+    geo = geoip.lookup(ip);
+    if (geo) {
+      if (users[ip])
+        users[ip].geo = geo;
+    } else {
+      users[ip].geo = {
+        range: [0, 0],
+        country: 'N/A',
+        region: 'N/A',
+        eu: 'N/A',
+        timezone: 'N/A',
+        city: 'N/A',
+        ll: [0, 0],
+        metro: 0,
+        area: 0
+      }
+    }
+  }
+  //...................................................
   res.send(all);
 });
 
