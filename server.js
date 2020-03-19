@@ -12,6 +12,11 @@ var db = {
   countries: []
 }
 
+let dataState = {
+  countries: false,
+  all: false
+}
+
 let users = {};
 
 let getAll = async () => {
@@ -47,8 +52,10 @@ let getAll = async () => {
   if (result) {
     db.all = result;
     console.log("Updated The Cases!");
+    dataState.all = true;
   } else {
-    console.log("result: ", result)
+    console.log("result: ", result);
+    dataState.all = false;
     console.log("!!! Cases not updated !!!");
   }
 
@@ -158,8 +165,10 @@ let getcountries = async () => {
   if (result.length > 0) {
     db.countries = result;
     console.log("Updated The Countries!");
+    dataState.countries = true;
   } else {
-    console.log("!!! Countries not updated !!!", result)
+    console.log("!!! Countries not updated !!!", result);
+    dataState.countries = false;
   }
 
 }
@@ -167,18 +176,13 @@ let getcountries = async () => {
 getAll();
 getcountries();
 
-setInterval(getAll, 300000);
-setInterval(getcountries, 300000);
+setInterval(getAll, 120000);
+setInterval(getcountries, 120000);
 
 
 app.use(cors());
 app.use(requestIp.mw());
 
-// app.use(function (req, res, next) {
-//   const ip = req.clientIp;
-//   console.log("ip connected: ", ip);
-//   next();
-// });
 
 app.get("/", async function (request, response) {
   let a = db.all;
@@ -203,7 +207,6 @@ app.get("/countries/", async function (req, res) {
 });
 
 app.get("/romania/", async function (req, res) {
-  // let countries = await db.fetch("countries");
   let countries = db.countries;
   let romania = countries.find(info => { return info.country === "Romania" });
   res.send(romania);
@@ -232,7 +235,6 @@ app.get("/hello/", async function (req, res) {
   const ip = req.clientIp;
   console.log(ip, ': Hello!');
 
-
   if (users[ip]) {
     users[ip].lastDate = Date.now();
     users[ip].views = users[ip].views + 1;
@@ -247,15 +249,32 @@ app.get("/hello/", async function (req, res) {
 
   if (ip) {
     geo = geoip.lookup(ip);
-    users[ip].geo = geo;
+    if (geo) {
+      if (users[ip])
+        users[ip].geo = geo;
+    } else {
+      users[ip].geo = {
+        range: [0, 0],
+        country: 'N/A',
+        region: 'N/A',
+        eu: 'N/A',
+        timezone: 'N/A',
+        city: 'N/A',
+        ll: [0, 0],
+        metro: 0,
+        area: 0
+      }
+    }
   }
-  console.log('geo', geo);
   res.send('Welcome')
 });
 
 app.get("/visits/", async function (req, res) {
-  res.send(users);
-  // console.log('Visits sent !', (new Date()).toLocaleString());
+  res.send({
+    users: users,
+    dataState: dataState
+  });
+  console.log('Pandemic Analytics: PING ');
 
 });
 
