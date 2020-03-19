@@ -212,7 +212,7 @@ app.get("/full/", async function (req, res) {
   const ip = req.clientIp;
 
   if (users[ip]) {
-    users[ip].lastConnection = new Date();
+    users[ip].lastConnection = Date.now();
   }
 
   let all = db.all;
@@ -238,7 +238,7 @@ app.get("/hello/", async function (req, res) {
     users[ip] = {
       lastDate: new Date(),
       views: 1,
-      lastConnection: new Date()
+      lastConnection: Date.now()
     }
   }
   res.send('Welcome')
