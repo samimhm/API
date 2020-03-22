@@ -27,6 +27,23 @@ let pandemicController = {
 
 let users = {};
 
+let geoSpatial = { data: '' };
+
+let getGeoSpatial = async () => {
+  response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/getCasesByCounty').then(rsp => {
+    geoSpatial.data = rsp.data;
+    console.log(geoSpatial.data);
+    console.log("UpdatedGeoSpatial!")
+  }).catch(err => {
+    console.log(geoSpatial.data);
+    console.log('GEOSPATIAL NOT UPDATED!!! ', err)
+  });
+}
+
+getGeoSpatial();
+setInterval(getGeoSpatial, 3600000)
+
+
 let getRoCounties = async () => {
   response = await axios.get('https://services7.arcgis.com/I8e17MZtXFDX9vvT/arcgis/rest/services/Coronavirus_romania/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Judete%20asc&resultOffset=0&resultRecordCount=42&cacheHint=true').then(rsp => {
     let tempArray = []
@@ -390,4 +407,9 @@ app.get("/goodbye/", async function (req, res) {
   const ip = req.clientIp;
   console.log(ip, ': Good Bye!');
   res.send('See you later!')
+});
+
+app.get("/sorin/", async function (req, res) {
+  console.log('Sorin Type Request')
+  res.send(geoSpatial.data);
 });
