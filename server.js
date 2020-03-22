@@ -3,21 +3,56 @@ var app = express();
 var axios = require("axios");
 var cheerio = require("cheerio");
 var cors = require("cors");
-// var db = require("quick.db");
 const requestIp = require('request-ip');
 var geoip = require('geoip-lite');
+var bodyParser = require('body-parser');
+
 
 var db = {
   all: {},
-  countries: []
+  countries: [],
+  roCounties: []
 }
 
 let dataState = {
   countries: false,
-  all: false
+  all: false,
+  roCounties: false
+}
+
+let pandemicController = {
+  problems: false,
+  message: ''
 }
 
 let users = {};
+
+let getRoCounties = async () => {
+  response = await axios.get('https://services7.arcgis.com/I8e17MZtXFDX9vvT/arcgis/rest/services/Coronavirus_romania/FeatureServer/0/query?f=json&where=1=1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Judete%20asc&resultOffset=0&resultRecordCount=42&cacheHint=true').then(rsp => {
+    let tempArray = []
+    rsp.data.features.forEach(countie => {
+      let obj = {
+        judet: countie.attributes.Judete,
+        cazuri: countie.attributes.Cazuri_confirmate,
+        vindecate: countie.attributes.Persoane_vindecate,
+        carantina: countie.attributes.Persoane_in_carantina,
+        izolate: countie.attributes.Persoane_izolate,
+        decedate: countie.attributes.Persoane_decedate
+      }
+      tempArray.push(obj)
+      // console.log(obj)
+    });
+    db.roCounties = tempArray;
+    dataState.roCounties = true;
+    console.log("Updated Romanian Counties!")
+  }).catch(err => {
+    dataState.roCounties = false;
+    console.log('ROMANIAN COUNTIES NOT UPDATED!!! ', err)
+  });
+}
+
+getRoCounties();
+setInterval(getRoCounties, 600000)
 
 let getAll = async () => {
   let response;
@@ -180,6 +215,8 @@ setInterval(getAll, 120000);
 setInterval(getcountries, 120000);
 
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json())
 app.use(cors());
 app.use(requestIp.mw());
 
@@ -268,11 +305,14 @@ app.get("/full/", async function (req, res) {
   let all = db.all;
   let countries = db.countries;
   let romania = countries.find(info => { return info.country === "Romania" });
-
+  let judete = db.roCounties;
+  // console.log('full: ', judete)
   res.send({
     all: all,
     countries: countries,
-    romania: romania
+    romania: romania,
+    judete: judete,
+    pandemicController: pandemicController
   });
 });
 
@@ -318,10 +358,32 @@ app.get("/hello/", async function (req, res) {
 app.get("/visits/", async function (req, res) {
   res.send({
     users: users,
-    dataState: dataState
+    dataState: dataState,
+    problems: pandemicController.problems
   });
-  console.log('Pandemic Analytics: PING ');
+  // console.log('Pandemic Analytics: PING ');
+});
 
+
+app.post("/problems/", async function (req, res) {
+  let password = 'volume';
+  if (req.body.password === password) {
+    if (req.body.problems === true) {
+      pandemicController.problems = true;
+      if (req.body.message) {
+        pandemicController.message = req.body.message;
+        console.log('Pandemic Analytics: ', pandemicController)
+      }
+    }
+    if (req.body.problems === false) {
+      pandemicController.problems = false;
+      console.log('Pandemic Analytics: NO PROBLEMS ANYMORE');
+    }
+    res.send({ done: true })
+  } else {
+    console.log('WRONG PASSWORD')
+    res.status(401).send(new Error('Wrong password!'))
+  }
 });
 
 app.get("/goodbye/", async function (req, res) {
