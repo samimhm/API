@@ -215,7 +215,7 @@ let getcountries = async () => {
     }
   }
   if (result.length > 0) {
-    db.countries = result;
+    db.countries = result.sort((a, b) => { return b.cases - a.cases });
     console.log("Updated The Countries!");
     dataState.countries = true;
   } else {
