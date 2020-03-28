@@ -40,8 +40,7 @@ let getGeoSpatial = async () => {
   });
 }
 
-getGeoSpatial();
-setInterval(getGeoSpatial, 3600000)
+
 
 
 let getRoCounties = async () => {
@@ -68,8 +67,7 @@ let getRoCounties = async () => {
   });
 }
 
-getRoCounties();
-setInterval(getRoCounties, 600000)
+
 
 let getAll = async () => {
   let response;
@@ -137,7 +135,7 @@ let getcountries = async () => {
     .children("td");
 
   // NOTE: this will change when table format change in website
-  const totalColumns = 10;
+  const totalColumns = 11;
   const countryColIndex = 0;
   const casesColIndex = 1;
   const todayCasesColIndex = 2;
@@ -227,9 +225,13 @@ let getcountries = async () => {
 
 getAll();
 getcountries();
+getRoCounties();
+getGeoSpatial();
 
 setInterval(getAll, 120000);
 setInterval(getcountries, 120000);
+setInterval(getGeoSpatial, 3600000);
+setInterval(getRoCounties, 600000);
 
 
 app.use(bodyParser.urlencoded({ extended: false }));
