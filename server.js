@@ -30,9 +30,9 @@ let users = {};
 let geoSpatial = { data: '' };
 
 let getGeoSpatial = async () => {
-  response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/getCasesByCounty').then(rsp => {
+  response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/v2/getCasesByCounty').then(rsp => {
     geoSpatial.data = rsp.data;
-    console.log(geoSpatial.data);
+    // console.log(geoSpatial.data);
     console.log("UpdatedGeoSpatial!")
   }).catch(err => {
     console.log(geoSpatial.data);
@@ -230,7 +230,7 @@ getGeoSpatial();
 
 setInterval(getAll, 120000);
 setInterval(getcountries, 120000);
-setInterval(getGeoSpatial, 3600000);
+setInterval(getGeoSpatial, 120000);
 setInterval(getRoCounties, 600000);
 
 
@@ -325,12 +325,14 @@ app.get("/full/", async function (req, res) {
   let countries = db.countries;
   let romania = countries.find(info => { return info.country === "Romania" });
   let judete = db.roCounties;
+  let geoJudete = geoSpatial.data;
   // console.log('full: ', judete)
   res.send({
     all: all,
     countries: countries,
     romania: romania,
     judete: judete,
+    geojudete: geoJudete,
     pandemicController: pandemicController
   });
 });
