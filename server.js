@@ -135,7 +135,7 @@ let getcountries = async () => {
     .children("td");
 
   // NOTE: this will change when table format change in website
-  const totalColumns = 10;
+  const totalColumns = 12;
   const countryColIndex = 0;
   const casesColIndex = 1;
   const todayCasesColIndex = 2;
@@ -213,7 +213,8 @@ let getcountries = async () => {
     }
   }
   if (result.length > 0) {
-    db.countries = result.sort((a, b) => { return b.cases - a.cases });
+    let tempCountries = result.sort((a, b) => { return b.cases - a.cases })
+    db.countries = tempCountries[0].country === 'World' ? tempCountries.slice(1) : tempCountries;
     console.log("Updated The Countries!");
     dataState.countries = true;
   } else {
@@ -230,7 +231,7 @@ getGeoSpatial();
 
 setInterval(getAll, 120000);
 setInterval(getcountries, 120000);
-setInterval(getGeoSpatial, 120000);
+setInterval(getGeoSpatial, 300000);
 setInterval(getRoCounties, 600000);
 
 
