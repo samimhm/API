@@ -119,12 +119,14 @@ app.get("/full/", async function (req, res) {
   let countries = data.db.countries;
   let romania = data.db.countries.find(info => { return info.country === "Romania" });
   let judete = data.db.roCounties;
+  let geoJudete = data.geoSpatial.data;
   console.log(ip, ': full')
   res.send({
     all: all,
     countries: countries,
     romania: romania,
     judete: judete,
+    geojudete: geoJudete,
     pandemicController: pandemicController
   });
 });
@@ -168,12 +170,14 @@ app.get("/fullV2/", async function (req, res) {
   let countries = data.db.countriesUpdated;
   let romania = data.db.countriesUpdated.find(info => { return info.country === "Romania" });
   let judete = data.db.roCounties;
+  let geojudete = data.geoSpatial.data;
   console.log(ip, ': fullV2')
   res.send({
     all: all,
     countries: countries,
     romania: romania,
     judete: judete,
+    geojudete: geojudete,
     pandemicController: pandemicController
   });
 });

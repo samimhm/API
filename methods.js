@@ -17,7 +17,7 @@ let geoSpatial = { data: '' };
 
 
 let getGeoSpatial = async () => {
-    response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/getCasesByCounty').then(rsp => {
+    response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/v2/getCasesByCounty').then(rsp => {
         geoSpatial.data = rsp.data;
         // console.log(geoSpatial.data);
         console.log("UpdatedGeoSpatial!")
@@ -117,7 +117,7 @@ let getcountries = async () => {
             .children("td");
 
         // NOTE: this will change when table format change in website
-        const totalColumns = 10;
+        const totalColumns = 12;
         const countryColIndex = 0;
         const casesColIndex = 1;
         const todayCasesColIndex = 2;
@@ -195,8 +195,9 @@ let getcountries = async () => {
             }
         }
         if (result.length > 0) {
-            db.countries = result.sort((a, b) => { return b.cases - a.cases });
-            console.log("Updated The Countries Old Way!");
+            let tempCountries = result.sort((a, b) => { return b.cases - a.cases })
+            db.countries = tempCountries[0].country === 'World' ? tempCountries.slice(1) : tempCountries;
+            console.log("Updated The Countries!");
             dataState.countries = true;
         } else {
             console.log("!!! Countries not updated Old Way!!!", result);
@@ -217,7 +218,7 @@ let getcountries = async () => {
             .children("td");
 
         // NOTE: this will change when table format change in website
-        const totalColumns = 10;
+        const totalColumns = 12;
         const countryColIndex = 0;
         const casesColIndex = 1;
         const todayCasesColIndex = 2;
@@ -304,7 +305,8 @@ let getcountries = async () => {
             }
         }
         if (result.length > 0) {
-            db.countriesUpdated = result.sort((a, b) => { return b.cases - a.cases });
+            let tempCountries = result.sort((a, b) => { return b.cases - a.cases })
+            db.countriesUpdated = tempCountries[0].country === 'World' ? tempCountries.slice(1) : tempCountries;
             console.log("Updated The Countries New Way!");
             dataState.countries = true;
         } else {
