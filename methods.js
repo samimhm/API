@@ -324,10 +324,10 @@ getcountries();
 getRoCounties();
 getGeoSpatial();
 
-// setInterval(getAll, 120000);
-// setInterval(getcountries, 120000);
-// setInterval(getGeoSpatial, 3600000);
-// setInterval(getRoCounties, 600000);
+setInterval(getAll, 120000);
+setInterval(getcountries, 120000);
+setInterval(getGeoSpatial, 3600000);
+setInterval(getRoCounties, 600000);
 
 module.exports = {
     db: db,
