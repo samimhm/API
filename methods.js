@@ -21,8 +21,10 @@ let geoSpatial = { data: '' };
 let getNovelCountries = async () => {
     await track.countries().then(rsp => {
         db.countriesUpdated = rsp;
+        dataState.countries = true;
         console.log('Updated Novel Countries!')
     }).catch(err => {
+        dataState.countries = false;
         console.log('NOVEL COUNTRIES NOT UPDATED !!!', err);
     })
 }
@@ -30,8 +32,10 @@ let getNovelCountries = async () => {
 let getNovelAll = async () => {
     await track.all().then(rsp => {
         db.all = rsp;
+        dataState.all = true;
         console.log('Updated Novel ALL!')
     }).catch(err => {
+        dataState.all = false;
         console.log('NOVEL ALL NOT UPDATED !!!', err);
     })
 }
