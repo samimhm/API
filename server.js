@@ -1,12 +1,9 @@
 var express = require("express");
 var app = express();
-
 var cors = require("cors");
 const requestIp = require('request-ip');
 var geoip = require('geoip-lite');
 var bodyParser = require('body-parser');
-
-// import { db, dataState, geoSpatial } from './methods'
 let data = require('./methods');
 
 

@@ -1,5 +1,8 @@
 var axios = require("axios");
 var cheerio = require("cheerio");
+const { NovelCovid } = require('novelcovid');
+const track = new NovelCovid();
+
 
 var db = {
     all: {},
@@ -15,12 +18,30 @@ let dataState = {
 
 let geoSpatial = { data: '' };
 
+let getNovelCountries = async () => {
+    await track.countries().then(rsp => {
+        db.countriesUpdated = rsp;
+        console.log('Updated Novel Countries!')
+    }).catch(err => {
+        console.log('NOVEL COUNTRIES NOT UPDATED !!!', err);
+    })
+}
+
+let getNovelAll = async () => {
+    await track.all().then(rsp => {
+        db.all = rsp;
+        console.log('Updated Novel ALL!')
+    }).catch(err => {
+        console.log('NOVEL ALL NOT UPDATED !!!', err);
+    })
+}
+
 
 let getGeoSpatial = async () => {
     response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/v2/getCasesByCounty').then(rsp => {
         geoSpatial.data = rsp.data;
         // console.log(geoSpatial.data);
-        console.log("UpdatedGeoSpatial!")
+        console.log("Updated GeoSpatial!")
     }).catch(err => {
         console.log(geoSpatial.data);
         console.log('GEOSPATIAL NOT UPDATED!!! ', err)
@@ -105,6 +126,14 @@ let getcountries = async () => {
     }
     //METHOD FOR OLD WAY OF GETTING COUNTRIES
     const oldWay = () => {
+        //CHECK FUNCTION
+        function checkDataContinent(cell) {
+            let attribsArray = Object.keys(cell.attribs);
+            console.log('FUNCTION attribsArray: ', attribsArray);
+            let includesDataContinent = attribsArray.includes('data-continent');
+            console.log('FUNCTION includes: ', includesDataContinent);
+            return includesDataContinent
+        }
         // to store parsed data
         const result = [];
 
@@ -115,7 +144,6 @@ let getcountries = async () => {
             .children("tbody")
             .children("tr")
             .children("td");
-
         // NOTE: this will change when table format change in website
         const totalColumns = 12;
         const countryColIndex = 0;
@@ -129,70 +157,78 @@ let getcountries = async () => {
         // minus totalColumns to skip last row, which is total
         for (let i = 0; i < countriesTableCells.length - totalColumns; i += 1) {
             const cell = countriesTableCells[i];
-            // get country
-            if (i % totalColumns === countryColIndex) {
-                let country =
-                    cell.children[0].data ||
-                    cell.children[0].children[0].data ||
-                    // country name with link has another level
-                    cell.children[0].children[0].children[0].data ||
-                    cell.children[0].children[0].children[0].children[0].data ||
-                    "";
-                country = country.trim();
-                if (country.length === 0) {
-                    // parse with hyperlink
-                    country = cell.children[0].next.children[0].data || "";
+            console.log(`cell ${i} attribs: `, cell.attribs)
+            if (!checkDataContinent(cell)) {
+                console.log(`heere ${i} !`)
+                if (i % totalColumns === countryColIndex) {
+                    let country =
+                        cell.children[0].data ||
+                        cell.children[0].children[0].data ||
+                        // country name with link has another level
+                        cell.children[0].children[0].children[0].data ||
+                        cell.children[0].children[0].children[0].children[0].data ||
+                        "";
+                    country = country.trim();
+                    if (country.length === 0) {
+                        // parse with hyperlink
+                        country = cell.children[0].next.children[0].data || "";
+                    }
+                    result.push({ country: country.trim() || "" });
                 }
-                result.push({ country: country.trim() || "" });
+                // get cases
+                if (i % totalColumns === casesColIndex) {
+                    let cases = cell.children[0] ? (cell.children[0].data) : "";
+                    result[result.length - 1].cases = parseInt(
+                        cases.trim().replace(/,/g, "") || "0",
+                        10
+                    );
+                }
+                // get today cases
+                if (i % totalColumns === todayCasesColIndex) {
+                    let cases = cell.children[0] ? (cell.children[0].data) : "";
+                    result[result.length - 1].todayCases = parseInt(
+                        cases.trim().replace(/,/g, "") || "0",
+                        10
+                    );
+                }
+                // get deaths
+                if (i % totalColumns === deathsColIndex) {
+                    let deaths = cell.children[0] ? (cell.children[0].data) : "";
+                    result[result.length - 1].deaths = parseInt(
+                        deaths.trim().replace(/,/g, "") || "0",
+                        10
+                    );
+                }
+                // get today deaths
+                if (i % totalColumns === todayDeathsColIndex) {
+                    let deaths = cell.children[0] ? (cell.children[0].data) : "";
+                    result[result.length - 1].todayDeaths = parseInt(
+                        deaths.trim().replace(/,/g, "") || "0",
+                        10
+                    );
+                }
+                // get cured
+                if (i % totalColumns === curedColIndex) {
+                    // console.log('result on recovered: ', result, 'i: ', i)
+                    let cured = cell.children[0] ? (cell.children[0].data) : "";
+                    result[result.length - 1].recovered = parseInt(
+                        cured.trim().replace(/,/g, "") || 0,
+                        10
+                    );
+                }
+                // get critical
+                if (i % totalColumns === criticalColIndex) {
+                    let critical = cell.children[0] ? (cell.children[0].data) : "";
+                    result[result.length - 1].critical = parseInt(
+                        critical.trim().replace(/,/g, "") || "0",
+                        10
+                    );
+                }
             }
-            // get cases
-            if (i % totalColumns === casesColIndex) {
-                let cases = cell.children[0] ? (cell.children[0].data) : "";
-                result[result.length - 1].cases = parseInt(
-                    cases.trim().replace(/,/g, "") || "0",
-                    10
-                );
-            }
-            // get today cases
-            if (i % totalColumns === todayCasesColIndex) {
-                let cases = cell.children[0] ? (cell.children[0].data) : "";
-                result[result.length - 1].todayCases = parseInt(
-                    cases.trim().replace(/,/g, "") || "0",
-                    10
-                );
-            }
-            // get deaths
-            if (i % totalColumns === deathsColIndex) {
-                let deaths = cell.children[0] ? (cell.children[0].data) : "";
-                result[result.length - 1].deaths = parseInt(
-                    deaths.trim().replace(/,/g, "") || "0",
-                    10
-                );
-            }
-            // get today deaths
-            if (i % totalColumns === todayDeathsColIndex) {
-                let deaths = cell.children[0] ? (cell.children[0].data) : "";
-                result[result.length - 1].todayDeaths = parseInt(
-                    deaths.trim().replace(/,/g, "") || "0",
-                    10
-                );
-            }
-            // get cured
-            if (i % totalColumns === curedColIndex) {
-                let cured = cell.children[0] ? (cell.children[0].data) : "";
-                result[result.length - 1].recovered = parseInt(
-                    cured.trim().replace(/,/g, "") || 0,
-                    10
-                );
-            }
-            // get critical
-            if (i % totalColumns === criticalColIndex) {
-                let critical = cell.children[0] ? (cell.children[0].data) : "";
-                result[result.length - 1].critical = parseInt(
-                    critical.trim().replace(/,/g, "") || "0",
-                    10
-                );
-            }
+            // } else {
+            //     console.log('NOT PROCESSING BECAUSE TRUE')
+            // }
+
         }
         if (result.length > 0) {
             let tempCountries = result.sort((a, b) => { return b.cases - a.cases })
@@ -319,13 +355,17 @@ let getcountries = async () => {
 
 }
 
-getAll();
-getcountries();
+// getAll();
+// // getcountries();
+getNovelAll();
+getNovelCountries();
 getRoCounties();
 getGeoSpatial();
 
-setInterval(getAll, 120000);
-setInterval(getcountries, 120000);
+// setInterval(getAll, 120000);
+// setInterval(getcountries, 120000);
+setInterval(getNovelAll, 60000);
+setInterval(getNovelCountries, 60000);
 setInterval(getGeoSpatial, 3600000);
 setInterval(getRoCounties, 600000);
 
