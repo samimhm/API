@@ -8,8 +8,8 @@ let data = require('./methods');
 
 
 let pandemicController = {
-  problems: false,
-  message: '',
+  problems: true,
+  message: 'Va rugam INCHIDETI si REDESCHIDETI din nou PANDEMIC.RO pentru a accesa varianta imbunatatita!',
   showChat: true,
   showCounties: true,
   showTop10: true,
