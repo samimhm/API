@@ -370,7 +370,7 @@ getGeoSpatial();
 // setInterval(getcountries, 120000);
 setInterval(getNovelAll, 60000);
 setInterval(getNovelCountries, 60000);
-setInterval(getGeoSpatial, 3600000);
+setInterval(getGeoSpatial, 300000);
 setInterval(getRoCounties, 600000);
 
 module.exports = {
