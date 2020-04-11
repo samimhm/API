@@ -20,7 +20,7 @@ let geoSpatial = { data: '' };
 
 let getNovelCountries = async () => {
     await track.countries().then(rsp => {
-        db.countriesUpdated = rsp;
+        db.countriesUpdated = rsp.sort((a, b) => { return b.cases - a.cases });
         dataState.countries = true;
         console.log('Updated Novel Countries!')
     }).catch(err => {
