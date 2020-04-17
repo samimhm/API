@@ -43,6 +43,12 @@ let getNovelAll = async () => {
 
 let getGeoSpatial = async () => {
     response = await axios.get('https://covid19.geo-spatial.org/api/dashboard/v2/getCasesByCounty').then(rsp => {
+        //REMOVING "JUDET NECUNOSCUT"
+        rsp.data.data.data.forEach((county, i) => {
+            if (county.county == "JUDEȚ NECUNOSCUT") {
+                rsp.data.data.data.splice(i, 1);
+            }
+        });
         geoSpatial.data = rsp.data;
         // console.log(geoSpatial.data);
         console.log("Updated GeoSpatial!")
